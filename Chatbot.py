@@ -66,11 +66,11 @@ client = OpenAI(api_key=openai_api_key)
 model = appConfig["model"]
 
 # Initialize feedback collector
-collector = FeedbackCollector(
-    project="default",
-    email=st.secrets.TRUBRICS_EMAIL,
-    password=st.secrets.TRUBRICS_PASSWORD,
-)
+# collector = FeedbackCollector(
+#     project="default",
+#     email=st.secrets.TRUBRICS_EMAIL,
+#     password=st.secrets.TRUBRICS_PASSWORD,
+# )
 
 def getUpdatedTime(item):
     return item[1]["updated_time"]
