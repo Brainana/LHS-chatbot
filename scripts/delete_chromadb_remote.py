@@ -35,6 +35,7 @@ for vector_id, document, metadata in zip(vectors["ids"], vectors["documents"], v
         delete_ids.append(vector_id)
         
 if len(delete_ids) > 0:
+    print(f"Deleting {args.fileName}")
     collection.delete(ids=delete_ids)
 else:
-    print("File not found.")
+    print(f"No vectors to delete for {args.fileName}.")
