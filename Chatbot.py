@@ -194,7 +194,6 @@ def rephraseQuery(query, years):
         """
 
     rephrasedQuery += f"""
-    Also, replace "Lexington, MA" with "town of Lexington" in the query.
     {lastQuerySection}
     """
 
@@ -325,13 +324,16 @@ async def awaitable_function(obj):
 chroma_client = HttpClient(host=appConfig["chroma_host"], port=int(appConfig["chroma_port"]))
 
 class GeneralDocsTool(BaseTool):
-    name: str = "general_docs_search"
+    name: str = None
     description: str = None
     collection: Collection = None
     docLocation: str = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.name = kwargs.get('name')
+
         self.collection = chroma_client.get_collection(name=kwargs.get('collectionName'))
 
         self.description = kwargs.get('description')
@@ -458,14 +460,14 @@ prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            f"""You are a financial assistant that is very knowledgable on the budget of the town of {appConfig['townName']}.
+            f"""You are a assistant that is very knowledgable on the new Lexington high school project.
 
-            Generate your response by priotizing the vectors with the highest similarity score.
-            Ensure the response reflects the content of the search vector that matches most closely to the input query.
+            Generate your response by priotizing the vectors with the lowest similarity distance.
 
-            If the user inquires about percentages, prioritize providing the direct percentage number from the document rather than calculating it.
-
-            {appConfig['townSpecificSystemInstruction']}
+            The agent should always attempt to use the 'FAQ' tool first to find an answer.
+            If the answer is not available through the 'FAQ' tool, the agent may then use the 'Other_Related_Info' tool.
+            Additionally, the agent can use 'Other_Related_Info' tool to provide supplemental information, 
+            as long as it does not contradict the information retrieved from the 'FAQ' tool.
 
             Please add all reference links of the vectors you used to generate your response.
             """
