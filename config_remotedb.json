@@ -22,7 +22,7 @@
                 "name": "FAQ",
                 "collectionName": "lc_chroma_lhsproject_faq",
                 "description": "This is the 'FAQ' tool, which agents should always use first to find answers. If an answer is found, other tools should be used only for supplementary information.",
-                "docLocation": "http://3.145.128.108:8080/"                
+                "docLocation": "doc-webserver-url-here"                
             }
 
         },
@@ -32,7 +32,7 @@
                 "name": "Other_Related_Info",
                 "collectionName": "lc_chroma_lhsproject",
                 "description": "Use this tool only if the answer cannot be found using the 'FAQ' agent tool, or to provide supplementary information that does not contradict the content provided by the 'FAQ' tool.",
-                "docLocation": "http://3.145.128.108:8080/"                
+                "docLocation": "doc-webserver-url-here"                
             }
 
         }
