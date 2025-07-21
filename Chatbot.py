@@ -28,6 +28,13 @@ import asyncio
 import json
 # import for structured response
 from langchain_core.pydantic_v1 import BaseModel
+import boto3
+import uuid
+
+# Initialize DynamoDB client and table globally
+dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+chat_table = dynamodb.Table('lhs-chatbot-usage')
+
 st.markdown(
     """
 <style>
@@ -566,36 +573,73 @@ def display_follow_ups():
     for follow_up in (st.session_state.follow_ups):
         follow_up_btns.append(st.button(f"{follow_up}", on_click=click_follow_up, args=[follow_up]))
 
+def save_chat_log(user_question, bot_response, metadata=None, feedback=None):
+    try:
+        item_id = str(uuid.uuid4())
+        item = {
+            'id': item_id,
+            'timestamp': datetime.utcnow().isoformat(),
+            'user_question': user_question,
+            'bot_response': bot_response
+        }
+        if metadata:
+            item['metadata'] = metadata
+        if feedback is not None:
+            item['feedback'] = feedback
+        chat_table.put_item(Item=item)
+        return item_id
+    except Exception as e:
+        print(f"Error saving chat log to DynamoDB: {e}")
+        return None
+
+def _submit_feedback():
+    """Callback function for feedback submission"""
+    # Get feedback directly from the text input using the key
+    feedback_text = st.session_state.get("feedback_text_key", '')
+    # Get thumbs feedback from streamlit_feedback
+    thumbs_feedback = st.session_state.get('feedback_thumbs_key', {})
+    item_id = st.session_state.get('last_item_id')
+    
+    if item_id:
+        # Update with both thumbs and text feedback as separate fields
+        update_expression = "SET"
+        expression_values = {}
+        
+        if feedback_text.strip():
+            update_expression += " text_feedback = :text_feedback,"
+            expression_values[':text_feedback'] = feedback_text
+        
+        if thumbs_feedback and 'score' in thumbs_feedback:
+            update_expression += " thumbs_score = :thumbs_score,"
+            expression_values[':thumbs_score'] = thumbs_feedback['score']
+        
+        # Remove trailing comma
+        update_expression = update_expression.rstrip(',')
+        
+        if update_expression != "SET":
+            chat_table.update_item(
+                Key={'id': item_id},
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_values
+            )
+
 def answerQuery(userQuery):
     st.session_state.chat_history.append(HumanMessage(content=userQuery))
-
     # Copy the user's question in the chat window
     with st.chat_message("user"):
         st.markdown(userQuery)
-
     with st.chat_message("assistant", avatar=assistantAvatar):
-        
         global message_placeholder
         message_placeholder = st.empty()
-
         message_placeholder.markdown('Please wait...&nbsp;&nbsp;<img src="https://brainana.github.io/LexBudgetDocs/images/loading_icon.gif" width=25>', unsafe_allow_html=True)
-
         # Track query start time
         start_time = time.time()
-
         full_response = ""
-
         asyncio.run(runAgent(userQuery))
-       
         message_placeholder.markdown(st.session_state.full_response, unsafe_allow_html=True)
-        # debugExpander = st.expander("Langchain Agent Steps (for debugging)")
-        # debugExpanderText = debugExpander.text(st.session_state.debugText)
-
         # Track query end time
         end_time = time.time()
         query_time = end_time - start_time
-
-        # construct metadata to be logged
         metadata={
             "query_time": f"{query_time:.2f} sec",
             "start_time": convert_to_est(start_time),
@@ -604,40 +648,26 @@ def answerQuery(userQuery):
             # "user_agent": user_agent
         }
 
-        # # log user query + assistant response + metadata 
-        # st.session_state.logged_prompt = collector.log_prompt(
-        #     config_model={"model": model},
-        #     prompt=userQuery,
-        #     generation=full_response,
-        #     metadata=metadata
-        # )
-
-        # # log user feedback
-        # user_feedback = collector.st_feedback(
-        #     component="default",
-        #     feedback_type="thumbs",
-        #     open_feedback_label="[Optional] Provide additional feedback",
-        #     model=st.session_state.logged_prompt.config_model.model,
-        #     prompt_id=st.session_state.logged_prompt.id,
-        #     key="feedback_key",
-        #     align="flex-start"
-        # )
-
+        # Save chat log to DynamoDB and get the item ID
+        item_id = save_chat_log(userQuery, st.session_state.full_response, metadata)
+        # Store the item_id in session state for feedback
+        st.session_state.last_item_id = item_id
         st.session_state.follow_ups = []
-
         suggest_follow_ups()
+    
+        with st.form('form'):
+            streamlit_feedback(
+                feedback_type = "thumbs",
+                align = "flex-start",
+                key='feedback_thumbs_key'
+            )
+            st.text_input(
+                key = "feedback_text_key",
+                label = "Please elaborate on your response."
+            )
 
-        # with st.form('form'):
-        #     streamlit_feedback(
-        #         feedback_type = "thumbs",
-        #         align = "flex-start",
-        #         key='feedback_key'
-        #     )
-        #     st.text_input(
-        #         label="Please elaborate on your response.",
-        #         key="feedback_response"
-        #     )
-        #     st.form_submit_button('Submit', on_click=_submit_feedback)
+            # Only enable submit if thumbs or text feedback is present
+            st.form_submit_button('Submit', on_click=_submit_feedback)
 
 # Display all previous messages upon page refresh
 assistantAvatar = appConfig['assistantAvatar']
