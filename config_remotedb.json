@@ -9,7 +9,7 @@
         "How does the cost of new Lexington high school compare to the cost of other schools in nearby towns?",
         "Where are we in the process of the new school building project?"
     ],
-    "model": "gpt-4o-2024-05-13",
+    "model": "gpt-4.1-2025-04-14",
     "currentFY": "FY2025",
     "townSpecificSystemInstruction": "",
     "historicalDataYears": 4,
@@ -21,7 +21,7 @@
             "args": {
                 "name": "FAQ",
                 "collectionName": "lc_chroma_lhsproject_faq",
-                "description": "This is the 'FAQ' tool, which agents should always use first to find answers. If an answer is found, other tools should be used only for supplementary information.",
+                "description": "This is the 'FAQ' tool, which should be used for high-level, general queries.",
                 "docLocation": "doc-webserver-url-here"                
             }
 
@@ -31,7 +31,7 @@
             "args": {
                 "name": "Other_Related_Info",
                 "collectionName": "lc_chroma_lhsproject",
-                "description": "Use this tool only if the answer cannot be found using the 'FAQ' agent tool, or to provide supplementary information that does not contradict the content provided by the 'FAQ' tool.",
+                "description": "Use this tool for specific queries.",
                 "docLocation": "doc-webserver-url-here"                
             }
 

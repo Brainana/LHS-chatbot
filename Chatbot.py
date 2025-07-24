@@ -30,6 +30,7 @@ import json
 from langchain_core.pydantic_v1 import BaseModel
 import boto3
 import uuid
+import urllib.parse
 
 # Initialize DynamoDB client and table globally
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
@@ -237,7 +238,8 @@ def getVectorText(collection, rephrasedQuery, docLocation):
     for i in range(0, len(vectors["ids"][0])):
         source = vectors["metadatas"][0][i]['source'].replace("\\","/")
         page = str(vectors["metadatas"][0][i]['page']+1)
-        link = "<a href='" + docLocation + source + "#page=" + page + "'>" + source + " (page " + page + ")</a>"
+        encoded_source = urllib.parse.quote(source)
+        link = "<a href='" + docLocation + encoded_source + "#page=" + page + "'>" + source + " (page " + page + ")</a>"
         # context += "Please exactly reference the following link in the generated response: " + link + " if the following content is used to generate the response: " + doc[0].page_content + "\n"
         if source in vs_link_mapping:
             link = vs_link_mapping[source]
@@ -306,7 +308,9 @@ metadata filter:
     for index, doc in enumerate(top_vectors):
         source = doc[0].metadata['source'].replace("\\","/")
         page = str(doc[0].metadata['page']+1)
-        link = "<a href='" + docLocation + source + "#page=" + page + "'>" + source + " (page " + page + ")</a>"
+        # URL encode the source path to handle spaces and special characters
+        encoded_source = urllib.parse.quote(source)
+        link = "<a href='" + docLocation + encoded_source + "#page=" + page + "'>" + source + " (page " + page + ")</a>"
         # context += "Please exactly reference the following link in the generated response: " + link + " if the following content is used to generate the response: " + doc[0].page_content + "\n"
         context += "vector #: " + str(index + 1) + "\n\nSimilarity search score: " + str(doc[1]) + "\n\nReference link: " + link + "\n\nText: " + doc[0].page_content + "\n\n"
         references += link
@@ -470,11 +474,6 @@ prompt = ChatPromptTemplate.from_messages(
             f"""You are a assistant that is very knowledgable on the new Lexington high school project.
 
             Generate your response by priotizing the vectors with the lowest similarity distance.
-
-            The agent should always attempt to use the 'FAQ' tool first to find an answer.
-            If the answer is not available through the 'FAQ' tool, the agent may then use the 'Other_Related_Info' tool.
-            Additionally, the agent can use 'Other_Related_Info' tool to provide supplemental information, 
-            as long as it does not contradict the information retrieved from the 'FAQ' tool.
 
             Please add all reference links of the vectors you used to generate your response.
             """
