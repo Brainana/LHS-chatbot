@@ -6,10 +6,9 @@ import io
 
 # =========================
 # install dependencies
-# 1.pip3 install pymupdf      
-# 2.pip install pytesseract  
-# 3.Download the Windows installer https://github.com/UB-Mannheim/tesseract/wiki
-# to run : LexBudget\scripts>python text-image-extraction.py
+# pip3 install pymupdf pytesseract
+# 3.Download the Windows installer https://github.com/UB-Mannheim/tesseract/wiki, brew install tesseract for MacOS
+# to run : LHS-chatbot\scripts>python text-image-extraction.py, or cd LHS-chatbot/scripts + python3 text-image-extraction.py for MacOS
 # =========================
 
 # =========================
@@ -19,8 +18,7 @@ import io
 pdf_path = "text-image-test.pdf"   # path to your PDF file
 
 # If Tesseract is not in PATH, set full path to executable, e.g.:
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
+pytesseract.pytesseract.tesseract_cmd = "tesseract" # or "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" on Windows
 #  Print the Tesseract version
 print(pytesseract.get_tesseract_version())
 
