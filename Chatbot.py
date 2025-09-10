@@ -9,7 +9,6 @@ import chromadb
 from chromadb import HttpClient
 from chromadb.api.models.Collection import Collection
 # import libraries for user feedback
-from trubrics.integrations.streamlit import FeedbackCollector
 from streamlit_feedback import streamlit_feedback
 from streamlit_javascript import st_javascript
 # import libraries for RAG + streaming
@@ -475,7 +474,7 @@ prompt = ChatPromptTemplate.from_messages(
 
             Generate your response by priotizing the vectors with the lowest similarity distance.
 
-            Please add all reference links of the vectors you used to generate your response.
+            Please add reference links for the vectors actually used in your response.
             """
         ),
         ("user", "{input}"),
