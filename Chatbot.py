@@ -251,12 +251,12 @@ def getVectorText(collection, rephrasedQuery, docLocation):
         )
         references += link
     
-    # with st.expander("(for debugging)"):
-    #     st.markdown(st.session_state.debugText, unsafe_allow_html=True)
-    # with st.expander("Most Relevant Chunks w/ Similarity Score (for debugging)"):
-    #     st.write(vectors)
-    # with st.expander("Links to Relevant Chunks (for debugging)"):
-    #     st.markdown(references, unsafe_allow_html=True)
+    #with st.expander("(for debugging)"):
+    #    st.markdown(st.session_state.debugText, unsafe_allow_html=True)
+    #with st.expander("Most Relevant Chunks w/ Similarity Score (for debugging)"):
+    #    st.write(vectors)
+    #with st.expander("Links to Relevant Chunks (for debugging)"):
+    #    st.markdown(references, unsafe_allow_html=True)
 
     st.session_state.debugText += f"""
 References:
@@ -470,11 +470,11 @@ prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            f"""You are a assistant that is very knowledgable on the new Lexington high school project.
+            f"""You are an assistant that only answers queries related to the new Lexington high school project. For all other queries, politely refuse to respond.
 
-            Generate your response by priotizing the vectors with the lowest similarity distance.
+	    Generate your response by priotizing the vectors with the lowest similarity distance.
 
-            Please add reference links for the vectors actually used in your response.
+            Please add reference links for the vectors actually used in your response. 
             """
         ),
         ("user", "{input}"),
@@ -557,7 +557,7 @@ def suggest_follow_ups():
 
     follow_up_query = f"""
     Given this chat history {st.session_state.chat_history[-2:]}, Suggest 2 follow-up questions the user 
-    might ask next."""
+    might ask next that are specifically related to the new high school project."""
 
     structured_llm = llm.with_structured_output(FollowUpQuestions)
     response = structured_llm.invoke(follow_up_query)
@@ -661,7 +661,7 @@ def answerQuery(userQuery):
             )
             st.text_input(
                 key = "feedback_text_key",
-                label = "Please elaborate on your response."
+                label = "Please provide your feedback."
             )
 
             # Only enable submit if thumbs or text feedback is present
