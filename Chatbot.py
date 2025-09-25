@@ -47,16 +47,23 @@ button {
     unsafe_allow_html=True,
 )
 
-#  Load vector source : link JSON file
-with open('./vectorsource_link.json', 'r', encoding='utf-8') as f:
-    vs_link_config = json.load(f)
+# Cache the file loading operations to prevent repeated file opens
+@st.cache_data
+def load_vectorsource_config():
+    with open('./vectorsource_link.json', 'r', encoding='utf-8') as f:
+        return json.load(f)
 
+@st.cache_data  
+def load_app_config():
+    with open("./config_remotedb.json", 'r') as file:
+        return json.load(file)
+
+# Load vector source : link JSON file
+vs_link_config = load_vectorsource_config()
 vs_link_mapping = {item['vector_source']: item['link'] for item in vs_link_config}
 
 # Get the specific configuration for the app
-appConfig = None
-with open("./config_remotedb.json", 'r') as file:
-    appConfig = json.load(file)
+appConfig = load_app_config()
 
 # Get the debug configuration mode
 debug = appConfig["debug"]
@@ -472,8 +479,10 @@ prompt = ChatPromptTemplate.from_messages(
             "system",
             f"""You are an assistant that only answers queries related to the new Lexington high school project. For all other queries, politely refuse to respond.
 
-	    Generate your response by priotizing the vectors with the lowest similarity distance.
+            Do not take sides on debatable questions: provdie only factual, neutral information and relevant context without endorsing a position (e.g. if asked "Is the new high school project worth it?")
 
+            Generate your response by priotizing the vectors with the lowest similarity distance.
+            
             Please add reference links for the vectors actually used in your response. 
             """
         ),
