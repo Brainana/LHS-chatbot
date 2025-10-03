@@ -676,29 +676,74 @@ def answerQuery(userQuery):
             # Only enable submit if thumbs or text feedback is present
             st.form_submit_button('Submit', on_click=_submit_feedback)
 
-# Display all previous messages upon page refresh
-assistantAvatar = appConfig['assistantAvatar']
-numMsgs = len(st.session_state.chat_history)
-for index,message in enumerate(st.session_state.chat_history):
-    if isinstance(message, AIMessage):
-        with st.chat_message("assistant", avatar=assistantAvatar):
-            st.markdown(message.content, unsafe_allow_html=True)
-    else:
-        with st.chat_message("user"):
-            st.markdown(message.content, unsafe_allow_html=True)
+# Display all previous messages upon page refresh (wrapped in run_app_ui)
+def run_app_ui():
+    assistantAvatar = appConfig['assistantAvatar']
+    numMsgs = len(st.session_state.chat_history)
+    for index,message in enumerate(st.session_state.chat_history):
+        if isinstance(message, AIMessage):
+            with st.chat_message("assistant", avatar=assistantAvatar):
+                st.markdown(message.content, unsafe_allow_html=True)
+        else:
+            with st.chat_message("user"):
+                st.markdown(message.content, unsafe_allow_html=True)
 
-# Display the input text box
-chatInputPlaceholder = appConfig['chatInputPlaceholder']
-if userQuery := st.chat_input(chatInputPlaceholder):
-    answerQuery(userQuery)
+    # Display the input text box
+    chatInputPlaceholder = appConfig['chatInputPlaceholder']
+    if userQuery := st.chat_input(chatInputPlaceholder):
+        answerQuery(userQuery)
 
-for index, questionBtn in enumerate(questionBtns):
-    if questionBtn:
-        answerQuery(sampleQuestions[index])
+    for index, questionBtn in enumerate(questionBtns):
+        if questionBtn:
+            answerQuery(sampleQuestions[index])
 
-if st.session_state.clicked_follow_up:
-    answerQuery(st.session_state.clicked_follow_up)
-    st.session_state.clicked_follow_up = None
+    if st.session_state.clicked_follow_up:
+        answerQuery(st.session_state.clicked_follow_up)
+        st.session_state.clicked_follow_up = None
 
-if st.session_state.follow_ups:
-    display_follow_ups()
+    if st.session_state.follow_ups:
+        display_follow_ups()
+
+
+def render_error_page(exc: Exception, tb_str: str):
+    # Simple error page for Streamlit
+    st.title("Oops — something went wrong")
+    st.error("An unexpected error occurred while running the application.")
+    with st.expander("Show error details"):
+        st.markdown(f"**Error:** {exc}")
+        st.code(tb_str)
+
+    # Allow user to download the traceback for reporting
+    st.download_button(
+        label="Download error log",
+        data=tb_str,
+        file_name="lhs_chatbot_error.txt",
+        mime="text/plain",
+    )
+
+
+import traceback
+
+try:
+    run_app_ui()
+except Exception as e:
+    tb = traceback.format_exc()
+    # attempt to save the error to DynamoDB if available
+    try:
+        err_item = {
+            'id': str(uuid.uuid4()),
+            'timestamp': datetime.utcnow().isoformat(),
+            'error': str(e),
+            'traceback': tb
+        }
+        # use a separate table name to avoid collisions; if the table doesn't exist this will fail silently
+        try:
+            error_table = dynamodb.Table('lhs-chatbot-errors')
+            error_table.put_item(Item=err_item)
+        except Exception:
+            # ignore DynamoDB errors here
+            pass
+    except Exception:
+        pass
+
+    render_error_page(e, tb)
