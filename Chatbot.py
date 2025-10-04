@@ -338,7 +338,11 @@ References:
 async def awaitable_function(obj):
     return obj
 
-chroma_client = HttpClient(host=appConfig["chroma_host"], port=int(appConfig["chroma_port"]))
+@st.cache_resource
+def get_chroma_client():
+    return HttpClient(host=appConfig["chroma_host"], port=int(appConfig["chroma_port"]))
+
+chroma_client = get_chroma_client()
 
 class GeneralDocsTool(BaseTool):
     name: str = None
@@ -479,6 +483,8 @@ prompt = ChatPromptTemplate.from_messages(
             "system",
             f"""You are an assistant that only answers queries related to the new Lexington high school project. For all other queries, politely refuse to respond.
 
+            Your documents are up to date as of August 2025. You have access to official materials like reports from the School Building Committee and Dore + Whittier Architects, Presentations, Project Submissions, FAQs, and other resources provided by stakeholder groups.
+
             Do not take sides on debatable questions: provdie only factual, neutral information and relevant context without endorsing a position (e.g. if asked "Is the new high school project worth it?")
 
             Generate your response by priotizing the vectors with the lowest similarity distance.
@@ -505,7 +511,7 @@ agent = (
     | OpenAIToolsAgentOutputParser()
 )
 
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True).with_config(
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False, handle_parsing_errors=True).with_config(
     {"run_name": "Agent"}
 )
 
