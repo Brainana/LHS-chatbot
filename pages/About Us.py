@@ -11,13 +11,23 @@ col1.markdown("# Lexington Chatbot Team")
 
 col1.markdown("### Our Mission:")
 
-col1.write(
-    "Our mission is to inform Lexington residents accurately by providing instant, well-cited answers to frequently asked questions about the "
-    "school building project, including financial details and voting logistics. Beyond delivering reliable information, the chatbot is designed to "
-    "raise awareness and boost engagement through its interactive interface, which prompts users with suggested follow-up questions to deepen "
-    "their understanding of key issues. Additionally, the tool will gather and analyze user feedback—tracking recurring questions, response satisfaction, "
-    "and knowledge gaps. By combining education, engagement, and data-driven insights, this project aims to foster an informed and participatory community "
-    "ahead of the vote."
+col1.markdown(
+    """
+    <p>
+    The LHS Chatbot is specially built to answer questions about the new Lexington High School Project. 
+    It saves residents' time by summarizing thousands of pages of official project documents, offering quick, clear answers with links to sources for user verification. 
+    While the chatbot is neutral in position, it can answer questions about costs, timelines, tax impact, and more. 
+    With this project, we hope to help residents better understand this important and widely discussed topic, enabling them to make well-informed decisions ahead of the LHS Project Special Debt Exclusion Vote on December 8th.
+    </p>
+    <p>
+    Our chatbot has also been featured in <a href="https://lexobserver.org/2025/10/01/lexington-high-school-building-project-chatbot/" target="_blank">The Lexington Observer</a>!
+    </p>
+    <p>
+    We offer multilingual support, so you can interact with the chatbot in your preferred language. 
+    If you have any questions or suggestions, please feel free to email us at <a href="mailto:lyst.connect@gmail.com">lyst.connect@gmail.com</a>.
+    </p>
+    """,
+    unsafe_allow_html=True
 )
 col1.write("")
 
