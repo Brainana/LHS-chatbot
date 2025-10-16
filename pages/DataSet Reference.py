@@ -7,7 +7,7 @@ st.set_page_config(page_title="About the Lexington Chatbot Team", page_icon="ðŸ“
 
 col1 , col2 = st.columns([9, 1] , gap = "small")
 
-col1.markdown("# Data Set Reference")
+col1.markdown("# Dataset References")
 
 col1.markdown("### Website:")
 
