@@ -38,8 +38,8 @@ with col1_sub:
     col1_sub.markdown("### Team Members:")
 
     col1_sub.write("Jerry Xu (Project Lead)")
-    col1_sub.write("Justin Wang")
-    col1_sub.write("Jasmine Gu")
+    col1_sub.write("Justin Wang (Developer)")
+    col1_sub.write("Jasmine Gu (Developer)")
     col1_sub.write("Joley Leung (Graphics)")
 
 with col2_sub:
